@@ -1,5 +1,4 @@
-// THIS IS THE FINAL, CORRECTED gemini.ts FILE
-import { GoogleGenerativeAI } from "@google/generative-ai"; // <-- FIX #1: Corrected import
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
@@ -53,8 +52,9 @@ Respond with JSON in this format:
   "confidence": 0-1
 }`;
 
+    // ✅ FIXED: Use stable alias
     const model = ai.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-pro",
       systemInstruction: systemPrompt,
     });
 
@@ -93,8 +93,9 @@ Respond with JSON format:
   "features": ["feature1", "feature2"]
 }`;
 
+    // ✅ FIXED: Use stable vision alias
     const model = ai.getGenerativeModel({
-      model: "gemini-2.5-pro",
+      model: "gemini-pro-vision",
       systemInstruction: systemPrompt,
     });
 
@@ -133,7 +134,6 @@ Respond with JSON format:
   }
 }
 
-// --- FIX #2: Removed the unused 'itemImage' parameter ---
 export async function findSimilar(
   itemName: string,
 ): Promise<{ results: any[] }> {
@@ -146,8 +146,10 @@ Return JSON array of similar products:
     ...
   ]
 }`;
+
+    // ✅ FIXED: Use stable alias
     const model = ai.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-pro",
       systemInstruction: systemPrompt,
     });
 
