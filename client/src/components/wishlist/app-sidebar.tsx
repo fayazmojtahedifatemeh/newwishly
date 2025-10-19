@@ -1,8 +1,7 @@
-import { Plus, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -15,7 +14,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { getCategoryIcon } from "@/lib/utils";
+import { NewListDialog } from "./new-list-dialog";
 import type { List } from "@shared/schema";
 
 export function AppSidebar() {
@@ -84,14 +83,7 @@ export function AppSidebar() {
       </SidebarContent>
       
       <SidebarFooter className="p-4">
-        <Button
-          variant="outline"
-          className="w-full justify-start gap-2"
-          data-testid="button-create-list"
-        >
-          <Plus className="h-4 w-4" />
-          New List
-        </Button>
+        <NewListDialog />
       </SidebarFooter>
     </Sidebar>
   );
