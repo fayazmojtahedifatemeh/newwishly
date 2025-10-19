@@ -54,7 +54,7 @@ Respond with JSON in this format:
 }`;
 
     const model = ai.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       systemInstruction: systemPrompt,
     });
 
@@ -94,7 +94,7 @@ Respond with JSON format:
 }`;
 
     const model = ai.getGenerativeModel({
-      model: "gemini-1.5-pro",
+      model: "gemini-2.5-pro",
       systemInstruction: systemPrompt,
     });
 
@@ -147,7 +147,7 @@ Return JSON array of similar products:
   ]
 }`;
     const model = ai.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       systemInstruction: systemPrompt,
     });
 

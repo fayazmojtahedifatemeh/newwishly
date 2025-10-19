@@ -186,7 +186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Item not found" });
       }
 
-      const results = await findSimilar(item.name, item.images?.[0]);
+      const results = await findSimilar(item.name);
       res.json(results);
     } catch (error) {
       res.status(500).json({ error: "Failed to find similar items" });

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ItemCard } from "@/components/wishlist/item-card";
 import { ActivityFeed } from "@/components/wishlist/activity-feed";
 import { AddItemModal } from "@/components/wishlist/add-item-modal";
+import { ImportCSVDialog } from "@/components/wishlist/import-csv-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Item } from "@shared/schema";
@@ -41,6 +42,7 @@ export default function Home() {
         </div>
         
         <div className="flex gap-2">
+          <ImportCSVDialog />
           <Button
             variant="outline"
             size="default"

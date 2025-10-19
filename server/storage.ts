@@ -92,7 +92,21 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const now = new Date();
     const item: Item = {
-      ...insertItem,
+      url: insertItem.url,
+      name: insertItem.name || "",
+      price: insertItem.price || null,
+      currency: insertItem.currency || null,
+      images: insertItem.images || [],
+      colors: insertItem.colors || null,
+      sizes: insertItem.sizes || null,
+      selectedSize: insertItem.selectedSize || null,
+      selectedColor: insertItem.selectedColor || null,
+      inStock: insertItem.inStock ?? true,
+      listId: insertItem.listId || null,
+      status: insertItem.status || "pending",
+      errorMessage: insertItem.errorMessage || null,
+      storeName: insertItem.storeName || null,
+      scraperType: insertItem.scraperType || null,
       id,
       createdAt: now,
       updatedAt: now,
@@ -132,8 +146,9 @@ export class MemStorage implements IStorage {
   async createList(insertList: InsertList): Promise<List> {
     const id = randomUUID();
     const list: List = {
-      ...insertList,
       id,
+      name: insertList.name,
+      icon: insertList.icon || "shopping-bag",
       createdAt: new Date(),
     };
     this.lists.set(id, list);
@@ -178,8 +193,11 @@ export class MemStorage implements IStorage {
   async createScraperJob(insertJob: InsertScraperJob): Promise<ScraperJob> {
     const id = randomUUID();
     const job: ScraperJob = {
-      ...insertJob,
       id,
+      itemId: insertJob.itemId,
+      status: insertJob.status || "pending",
+      attempts: insertJob.attempts || 0,
+      errorMessage: insertJob.errorMessage || null,
       createdAt: new Date(),
       processedAt: null,
     };
