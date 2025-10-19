@@ -1,14 +1,23 @@
-// Blueprint reference: javascript_gemini
-import { GoogleGenAI } from "@google/genai";
+// THIS IS THE FINAL, CORRECTED gemini.ts FILE
+import { GoogleGenerativeAI } from "@google/generative-ai"; // <-- FIX #1: Corrected import
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+
+if (!process.env.GEMINI_API_KEY) {
+  console.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  console.error("GEMINI_API_KEY secret is not set in Replit!");
+  console.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+}
 
 export interface CategorySuggestion {
   suggestedCategory: string;
   confidence: number;
 }
 
-export async function suggestCategory(itemName: string, itemDescription?: string): Promise<CategorySuggestion> {
+export async function suggestCategory(
+  itemName: string,
+  itemDescription?: string,
+): Promise<CategorySuggestion> {
   try {
     const prompt = itemDescription
       ? `${itemName}\n\n${itemDescription}`
@@ -16,18 +25,27 @@ export async function suggestCategory(itemName: string, itemDescription?: string
 
     const systemPrompt = `You are an expert at categorizing shopping items.
 Analyze the product name and description, then suggest ONE category from this list:
-- Dresses
+- All items
 - Skirts
-- Tops
-- Makeup
-- Perfumes
+- Dresses
+- Coats
 - Shoes
-- Bags
-- Jewelry
 - Electronics
-- Home
-- Books
-- Toys
+- Food
+- House things
+- Extra stuff
+- Jewelry
+- Tops
+- Nails
+- Makeup
+- Pants
+- Bags
+- Blazers
+- Gym
+- Sweaters & Cardigans
+- Accessories
+- Perfumes
+- Shirts and Blouses
 
 Respond with JSON in this format:
 {
@@ -35,37 +53,30 @@ Respond with JSON in this format:
   "confidence": 0-1
 }`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: "object",
-          properties: {
-            suggestedCategory: { type: "string" },
-            confidence: { type: "number" },
-          },
-          required: ["suggestedCategory", "confidence"],
-        },
-      },
-      contents: prompt,
+    const model = ai.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      systemInstruction: systemPrompt,
     });
 
-    const rawJson = response.text;
+    const result = await model.generateContent(prompt);
+    const rawJson = result.response.text();
+
     if (rawJson) {
-      return JSON.parse(rawJson);
+      const cleanJson = rawJson.replace(/```json/g, "").replace(/```/g, "");
+      return JSON.parse(cleanJson);
     }
 
-    // Fallback
-    return { suggestedCategory: "All Items", confidence: 0 };
+    return { suggestedCategory: "All items", confidence: 0 };
   } catch (error) {
     console.error("Failed to suggest category:", error);
-    return { suggestedCategory: "All Items", confidence: 0 };
+    return { suggestedCategory: "All items", confidence: 0 };
   }
 }
 
-export async function searchByImage(imageBase64: string): Promise<{ results: any[] }> {
+export async function searchByImage(
+  imageBase64: string,
+): Promise<{ results: any[] }> {
+  console.log("Running Gemini image analysis. This is NOT Google Lens search.");
   try {
     const systemPrompt = `You are helping find products from an image.
 Analyze this product image and extract:
@@ -82,47 +93,51 @@ Respond with JSON format:
   "features": ["feature1", "feature2"]
 }`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-pro",
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: "application/json",
-      },
-      contents: [
-        {
-          inlineData: {
-            data: imageBase64,
-            mimeType: "image/jpeg",
-          },
-        },
-        "Analyze this product image and extract product information.",
-      ],
+    const model = ai.getGenerativeModel({
+      model: "gemini-1.5-pro",
+      systemInstruction: systemPrompt,
     });
 
-    const rawJson = response.text;
+    const imagePart = {
+      inlineData: {
+        data: imageBase64,
+        mimeType: "image/jpeg",
+      },
+    };
+
+    const result = await model.generateContent([
+      "Analyze this product image and extract product information.",
+      imagePart,
+    ]);
+    const rawJson = result.response.text();
+
     if (rawJson) {
-      const data = JSON.parse(rawJson);
+      const cleanJson = rawJson.replace(/```json/g, "").replace(/```/g, "");
+      const data = JSON.parse(cleanJson);
       return {
-        results: [{
-          name: data.productName || "Unknown Product",
-          category: data.category || "General",
-          estimatedPrice: data.priceRange || "Unknown",
-          features: data.features || [],
-        }],
+        results: [
+          {
+            name: data.productName || "Unknown Product",
+            category: data.category || "General",
+            estimatedPrice: data.priceRange || "Unknown",
+            features: data.features || [],
+          },
+        ],
       };
     }
 
     return { results: [] };
   } catch (error) {
-    console.error("Failed to search by image:", error);
-    return { results: [] };
+    console.error("Failed to search by image with Gemini:", error);
+    throw new Error("Failed to analyze image with Gemini.");
   }
 }
 
-export async function findSimilar(itemName: string, itemImage?: string): Promise<{ results: any[] }> {
+// --- FIX #2: Removed the unused 'itemImage' parameter ---
+export async function findSimilar(
+  itemName: string,
+): Promise<{ results: any[] }> {
   try {
-    // In a real implementation, this would use Google Vision API
-    // For now, we'll use Gemini to suggest similar product types
     const systemPrompt = `Given a product name, suggest 3-5 similar or related products.
 Return JSON array of similar products:
 {
@@ -131,27 +146,26 @@ Return JSON array of similar products:
     ...
   ]
 }`;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: "application/json",
-      },
-      contents: `Find similar products to: ${itemName}`,
+    const model = ai.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      systemInstruction: systemPrompt,
     });
 
-    const rawJson = response.text;
+    const result = await model.generateContent(
+      `Find similar products to: ${itemName}`,
+    );
+    const rawJson = result.response.text();
+
     if (rawJson) {
-      const data = JSON.parse(rawJson);
+      const cleanJson = rawJson.replace(/```json/g, "").replace(/```/g, "");
+      const data = JSON.parse(cleanJson);
       return {
         results: data.similar || [],
       };
     }
-
     return { results: [] };
   } catch (error) {
-    console.error("Failed to find similar:", error);
+    console.error("Failed to find similar with Gemini:", error);
     return { results: [] };
   }
 }
